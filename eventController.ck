@@ -82,74 +82,65 @@ now => timeStartDrum;
 float curMeasure; //current measure after start of drums as float
 float measureLeft;  //fraction of a measure until next measure starts
 dur tillNextMeasure;//time until next measure starts
-
-// Hid object
-Hid hi;
-// message to convey data from Hid device
-HidMsg msg;
-
-// device number: which keyboard to open
-0 => int device;
-
-// open keyboard; or exit if fail to open
-if( !hi.openKeyboard( device ) ) me.exit();
-// <<< "keyboard '" + hi.name() + "' ready", "" >>>;
-
+-1 => int eventValue;
 // infinite event loop
 while( true )
 {
-  // wait for event
-  hi => now;
+  // cereal.onLine() => now;
+  // cereal.getLine() => string line;
+  // chout <= "line: " <= line;
+  //
+
+  // wait for custom event
+    <<< "test" >>>;
+  c.event => now;
+    <<< "eventValue" >>>;
+  c.event.value => eventValue;
+  <<< eventValue >>>;
 
   c.populateScale();
-  // get message
-  while( hi.recv( msg ) )
-  {
-    // filter out button down events
-    if( msg.isButtonDown() )
-    {
 
-      // <<< "down:", msg.which, "(which)", msg.key, "(usb key)", msg.ascii, "(ascii)" >>>;
+
 
       //function keys for octave above notes
-      if (msg.key >=c.F1 && msg.key <= c.F12)
+      if (eventValue >=c.F1 && eventValue <= c.F12)
       {
-        play(msg.key - c.F1 + c.scale.cap());  //sends step of scale + octave: 7-14
+        play(eventValue - c.F1 + c.scale.cap());  //sends step of scale + octave: 7-14
       }
       //top keys 1-0
-      if (msg.key >=c.NUM_1 && msg.key <= c.NUM_0)
+      if (eventValue >=c.NUM_1 && eventValue <= c.NUM_0)
       {
         //check if 1-0 is used to set reverb value
         if (previousMsg == c.KB_R)
         {
-          (msg.key - c.NUM_1)/10.0 => rev.mix;
+          (eventValue - c.NUM_1)/10.0 => rev.mix;
           -1 => previousMsg;
         }
 
         //if no 'previousMsg' just being used to play a note
         else{
-          play(msg.key - c.NUM_1); //sends step of scale, 0-7
+          play(eventValue - c.NUM_1); //sends step of scale, 0-7
         }
       }
 
       //turn off sound
-      if (msg.key == c.BACK_SPACE) {
+      if (eventValue == c.BACK_SPACE) {
         instrGain => instr.noteOff;
       }
 
       //raise octave
-      if (msg.key == c.UP_ARROW) {
+      if (eventValue == c.UP_ARROW) {
         startOctave + 1 => startOctave;
       }
 
       //lower octave
-      if (msg.key == c.DOWN_ARROW) {
+      if (eventValue == c.DOWN_ARROW) {
         startOctave - 1 => startOctave;
       }
 
       //set reverb
-      if (msg.key == c.KB_R) {
-        msg.key => previousMsg;
+      if (eventValue == c.KB_R) {
+        eventValue => previousMsg;
       }
       // //raise semitone
       // if (msg.key == c.EQUALS) {
@@ -161,8 +152,8 @@ while( true )
       //    Std.mtof(c.fullScale[value-1] + startOctave*12 - 1) => frequency;
       // }
     }
-  }
-}
+
+
 
 fun void play(int scaleStep)
 {

@@ -1,5 +1,13 @@
+class MandoEvent extends Event
+{
+  int value; //for usb, this will be msg.key
+}
+
 public  class Constants
 {
+
+
+
   [0,2,4,5,7,9,11,12] @=> int ionian[];
   [0,2,3,5,7,9,10,12] @=>  int dorian[];
   [0,1,3,5,7,8,10,12] @=>  int phrygian[];
@@ -134,5 +142,7 @@ public  class Constants
   }
 
 
+  static MandoEvent @ event;
 
 }
+new MandoEvent @=> Constants.event;
