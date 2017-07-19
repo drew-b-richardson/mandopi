@@ -50,6 +50,9 @@
 400 => int BEND_START;
 600 => int BEND_END;
 (BEND_START + BEND_END) / 2 => int BEND_MID;
+1500 => int VIBRATO_START;
+2500 => int VIBRATO_END;
+(VIBRATO_START + VIBRATO_END) / 2 => int VIBRATO_MID;
 
 8 => int OCTAVE_RANGE;
 
@@ -179,6 +182,15 @@ while( true )
     frequency => instr.freq;
     // 1::samp => now;
   }
+
+  //vibrato
+  if (event.value > VIBRATO_START && event.value < VIBRATO_END) {
+    (event.value - VIBRATO_MID) => int normalizedValue; //-100 to 100
+    20 => int BEND_FACTOR;  //larger the number, less bend per joystick movement
+    normalizedValue/BEND_FACTOR + frequency => frequency; //-20 to 20
+    <<< frequency >>>;
+    frequency => instr.freq;
+  }
 }
 
 //wait for arduino serial line.  once you get one, signal main program and send value back to main program via passed in mando event
@@ -203,7 +215,7 @@ for(int i; i < list.cap(); i++)
 }
 
   SerialIO cereal;
-  cereal.open(0, SerialIO.B9600, SerialIO.ASCII);
+  cereal.open(2, SerialIO.B9600, SerialIO.ASCII);
   while(true)
   {
     cereal.onLine() => now;
