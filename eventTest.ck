@@ -184,6 +184,24 @@ while( true )
 //wait for arduino serial line.  once you get one, signal main program and send value back to main program via passed in mando event
 fun void getArduinoEvent(MandoEvent e)
 {
+
+// list serial devices
+SerialIO.list() @=> string list[];
+
+// no serial devices available
+if(list.cap() == 0)
+{
+    cherr <= "no serial devices available\n";
+    me.exit();
+}
+
+// print list of serial devices
+chout <= "Available devices\n";
+for(int i; i < list.cap(); i++)
+{
+    chout <= i <= ": " <= list[i] <= IO.newline();
+}
+
   SerialIO cereal;
   cereal.open(0, SerialIO.B9600, SerialIO.ASCII);
   while(true)
