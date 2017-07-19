@@ -34,6 +34,7 @@
 58 => int F1;
 69 => int F12;
 30 => int NUM_1;
+31 => int NUM_2;
 39 => int NUM_0;
 42 => int BACK_SPACE;
 81 => int DOWN_ARROW;
@@ -41,6 +42,14 @@
 45 => int DASH;
 46 => int EQUALS;
 21 => int KB_R;
+14 => int KB_K;
+6 => int KB_C;
+4 => int KB_A;
+22 => int KB_S;
+
+400 => int BEND_START;
+600 => int BEND_END;
+(BEND_START + BEND_END) / 2 => int BEND_MID;
 
 8 => int OCTAVE_RANGE;
 
@@ -66,7 +75,7 @@ instr =>  NRev rev => Chorus chorus => Gain g =>  Pan2 p =>    dac;
 
 //set initial values
 KEY_A => currentKey;
-minpent @=> currentScale;
+ionian @=> currentScale;
 5 => startOctave;
 int fullScale[currentScale.cap() * (OCTAVE_RANGE)];
 
@@ -86,7 +95,7 @@ while( true )
 {
   //wait for event
   event => now;
-  <<<  event.value >>>;
+  // <<<  event.value >>>;
   //function keys for octave above notes
   if (event.value >=F1 && event.value <= F12)
   {
@@ -99,6 +108,18 @@ while( true )
     if (previousMsg == KB_R)
     {
       (event.value - NUM_1)/10.0 => rev.mix;
+      -1 => previousMsg;
+    }
+    //check if 1-0 is used to set scale
+    if (previousMsg == KB_S)
+    {
+      if (event.value == NUM_1) {
+        ionian @=> currentScale;
+      }
+      else if (event.value == NUM_2) {
+        dorian @=> currentScale;
+      }
+      populateScale();
       -1 => previousMsg;
     }
 
@@ -127,6 +148,37 @@ while( true )
   if (event.value == KB_R) {
     event.value => previousMsg;
   }
+
+  //set scale
+   if (event.value == KB_S) {
+     event.value => previousMsg;
+   }
+
+  //set key
+  if (event.value == KB_K) {
+    event.value => previousMsg;
+  }
+  if (event.value == KB_C && previousMsg == KB_K) {
+      KEY_C => currentKey;
+      -1 => previousMsg;
+      populateScale();
+    }
+    else if (event.value == KB_A && previousMsg == KB_K) {
+      KEY_A => currentKey;
+      -1 => previousMsg;
+      populateScale();
+    }
+
+
+  //bend pitch
+  if (event.value > BEND_START && event.value < BEND_END) {
+    (event.value - BEND_MID) => int normalizedValue; //-100 to 100
+    10 => int BEND_FACTOR;  //larger the number, less bend per joystick movement
+    normalizedValue/BEND_FACTOR + frequency => frequency; //-20 to 20
+    <<< frequency >>>;
+    frequency => instr.freq;
+    // 1::samp => now;
+  }
 }
 
 //wait for arduino serial line.  once you get one, signal main program and send value back to main program via passed in mando event
@@ -138,10 +190,8 @@ fun void getArduinoEvent(MandoEvent e)
   {
     cereal.onLine() => now;
     cereal.getLine() => string line;
-    250 => e.value;
-    <<< "signaled", e.value>>>;
+    Std.atoi(line) => e.value;
     e.signal();
-    1::samp => now;
   }
 }
 
@@ -159,10 +209,10 @@ fun void getKeyboardEvent(MandoEvent e)
     {
       if( msg.isButtonDown() )
       {
-        <<< "down:", msg.which, "(which)", msg.key, "(usb key)", msg.ascii, "(ascii)" >>>;
+        <<< "down:",  msg.key >>>;
         msg.key => e.value;
         e.signal();
-        1::samp => now;
+        // 1::samp => now;
       }
     }
   }

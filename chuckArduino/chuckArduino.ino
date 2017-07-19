@@ -8,17 +8,14 @@ void setup() {
     nunchuk_init();
 
 }
-
+int BEND_MID = 500;
+int THRESHOLD = 5;
 void loop() {
-//-4,-1,-193,-4,118,0,0
-
-
+    //-4,-1,-193,-4,118,0,0 - output of nunchuk_print();
     if (nunchuk_read()) {
-        if (nunchuk_buttonZ() == 1) {
-          Serial.println("z");
-        }
-        //nunchuk_print();
-
+      if (nunchuk_joystickY() > THRESHOLD || nunchuk_joystickY() < (THRESHOLD * -1)) {
+        Serial.println(BEND_MID + nunchuk_joystickY()); //bends will return val between 400 and 600
+      }
     }
-    delay(500);
+    delay(20); //lower than 20 and chuck has hard time keeping up.
 }
