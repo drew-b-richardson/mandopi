@@ -91,7 +91,7 @@ class MandoEvent extends Event
 }
 MandoEvent event;
 spork ~ getKeyboardEvent(event);
-spork ~ getArduinoEvent(event);
+// spork ~ getArduinoEvent(event);
 
 //MAIN PROGRAM
 while( true )
@@ -190,38 +190,38 @@ while( true )
   }
 }
 
-//wait for arduino serial line.  once you get one, signal main program and send value back to main program via passed in mando event
-fun void getArduinoEvent(MandoEvent e)
-{
-
-// list serial devices
-SerialIO.list() @=> string list[];
-
-// no serial devices available
-if(list.cap() == 0)
-{
-    cherr <= "no serial devices available\n";
-    me.exit();
-}
-
-// print list of serial devices
-chout <= "Available devices\n";
-for(int i; i < list.cap(); i++)
-{
-    chout <= i <= ": " <= list[i] <= IO.newline();
-}
-
-  SerialIO cereal;
-  cereal.open(2, SerialIO.B9600, SerialIO.ASCII);
-  while(true)
-  {
-    cereal.onLine() => now;
-    cereal.getLine() => string line;
-    Std.atoi(line) => e.value;
-    e.signal();
-  }
-}
-
+// //wait for arduino serial line.  once you get one, signal main program and send value back to main program via passed in mando event
+// fun void getArduinoEvent(MandoEvent e)
+// {
+//
+// // list serial devices
+// SerialIO.list() @=> string list[];
+//
+// // no serial devices available
+// if(list.cap() == 0)
+// {
+//     cherr <= "no serial devices available\n";
+//     me.exit();
+// }
+//
+// // print list of serial devices
+// chout <= "Available devices\n";
+// for(int i; i < list.cap(); i++)
+// {
+//     chout <= i <= ": " <= list[i] <= IO.newline();
+// }
+//
+//   SerialIO cereal;
+//   cereal.open(2, SerialIO.B9600, SerialIO.ASCII);
+//   while(true)
+//   {
+//     cereal.onLine() => now;
+//     cereal.getLine() => string line;
+//     Std.atoi(line) => e.value;
+//     e.signal();
+//   }
+// }
+//
 //wait for keypress. once you get one, signal main program and send value back to main program via passed in mando event
 fun void getKeyboardEvent(MandoEvent e)
 {
