@@ -173,23 +173,20 @@ while( true )
     }
 
 
-  //bend pitch
-  if (event.value > BEND_START && event.value < BEND_END) {
-    (event.value - BEND_MID) => int normalizedValue; //-100 to 100
-    10 => int BEND_FACTOR;  //larger the number, less bend per joystick movement
-    normalizedValue/BEND_FACTOR + frequency => frequency; //-20 to 20
-    <<< frequency >>>;
-    frequency => instr.freq;
-    // 1::samp => now;
-  }
+    //bend pitch
+    if (event.value > BEND_START && event.value < BEND_END) {
+      (event.value - BEND_MID) => int normalizedValue; //-100 to 100
+        map(normalizedValue, -100, 100, frequency * 8/9, frequency*8/7)=> float newFreq;
+        <<< frequency, ":old | ", newFreq, ":new" >>>;
+        newFreq => instr.freq;
+    }
 
   //vibrato
   if (event.value > VIBRATO_START && event.value < VIBRATO_END) {
-    (event.value - VIBRATO_MID) => int normalizedValue; //-100 to 100
-    20 => int BEND_FACTOR;  //larger the number, less bend per joystick movement
-    normalizedValue/BEND_FACTOR + frequency => frequency; //-20 to 20
-    <<< frequency >>>;
-    frequency => instr.freq;
+    (event.value - VIBRATO_MID) => int normalizedValue; //-500 to 500
+    map(normalizedValue, -500, 500, frequency * 22/23, frequency*20/19)=> float newFreq;
+    <<< frequency, ":old | ", newFreq, ":new" >>>;
+    newFreq => instr.freq;
   }
 }
 
@@ -246,6 +243,11 @@ fun void getKeyboardEvent(MandoEvent e)
       }
     }
   }
+}
+
+fun float map(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 fun void populateScale()
