@@ -69,12 +69,13 @@ float instrGain;
 StkInstrument inst[1];
 Flute inst0 @=> inst[0];
 inst[0] @=> StkInstrument instr;
-instr =>  NRev rev => Chorus chorus => Gain g =>  Pan2 p =>    dac;
-0.2 => chorus.modDepth;
+// instr =>  NRev rev => Chorus chorus => Gain g =>  Pan2 p =>    dac;
+instr =>Gain g =>  dac;
+// 0.2 => chorus.modDepth;
 0.9 => instrGain;
-0.2 => rev.mix;
-0.0 => chorus.mix;
-0 => p.pan;
+// 0.0 => rev.mix;
+// 0.0 => chorus.mix;
+// 0 => p.pan;
 
 //set initial values
 KEY_A => currentKey;
@@ -107,13 +108,13 @@ while( true )
   //top keys 1-0
   if (event.value >=NUM_1 && event.value <= NUM_0)
   {
-    //check if 1-0 is used to set reverb value
-    if (previousMsg == KB_R)
-    {
-      (event.value - NUM_1)/10.0 => rev.mix;
-      -1 => previousMsg;
-    }
-    //check if 1-0 is used to set scale
+    // //check if 1-0 is used to set reverb value
+    // if (previousMsg == KB_R)
+    // {
+    //   (event.value - NUM_1)/10.0 => rev.mix;
+    //   -1 => previousMsg;
+    // }
+    // //check if 1-0 is used to set scale
     if (previousMsg == KB_S)
     {
       if (event.value == NUM_1) {
@@ -148,10 +149,10 @@ while( true )
   }
 
   //set reverb
-  if (event.value == KB_R) {
-    event.value => previousMsg;
-  }
-
+  // if (event.value == KB_R) {
+  //   event.value => previousMsg;
+  // }
+  //
   //set scale
    if (event.value == KB_S) {
      event.value => previousMsg;
@@ -212,7 +213,7 @@ for(int i; i < list.cap(); i++)
 }
 
   SerialIO cereal;
-  cereal.open(2, SerialIO.B9600, SerialIO.ASCII);
+  cereal.open(0, SerialIO.B9600, SerialIO.ASCII);
   while(true)
   {
     cereal.onLine() => now;
