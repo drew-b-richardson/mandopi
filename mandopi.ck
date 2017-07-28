@@ -31,6 +31,20 @@
 [0,2,3,6,7,8,11,12] @=>   int gypsy[];
 [0,1,4,5,7,8,10,12] @=>   int ahava[];
 
+StkInstrument inst[12];
+// make each instrument a different type
+Flute inst0 @=> inst[0];
+Rhodey inst1 @=> inst[1];
+Moog inst2 @=> inst[2];
+BeeThree inst3 @=> inst[3];
+Wurley inst4 @=> inst[4];
+FMVoices inst5 @=> inst[5];
+TubeBell inst6 @=> inst[6];
+PercFlut inst7 @=> inst[7];
+StifKarp inst8 @=> inst[8];
+ModalBar inst9 @=> inst[9];
+VoicForm inst11 @=> inst[11];
+
 58 => int F1;
 69 => int F12;
 30 => int NUM_1;
@@ -46,6 +60,7 @@
 6 => int KB_C;
 4 => int KB_A;
 22 => int KB_S;
+12 => int KB_I;
 
 400 => int BEND_START;
 600 => int BEND_END;
@@ -66,8 +81,8 @@ float frequency;
 float instrGain;
 
 //main instrument set up
-StkInstrument inst[1];
-Flute inst0 @=> inst[0];
+// StkInstrument inst[1];
+// Flute inst0 @=> inst[0];
 inst[0] @=> StkInstrument instr;
 // instr =>  NRev rev => Chorus chorus => Gain g =>  Pan2 p =>    dac;
 instr =>Gain g =>  dac;
@@ -99,11 +114,13 @@ while( true )
 {
   //wait for event
   event => now;
+  //event.value => previousMsg;
+
   // <<<  event.value >>>;
   //function keys for octave above notes
   if (event.value >=F1 && event.value <= F12)
   {
-    play(event.value - F1 + currentScale.cap());  //sends step of scale + octave: 7-14
+    play(event.value - F1 + currentScale.cap() - 1);  //sends step of scale + octave: 7-14
   }
   //top keys 1-0
   if (event.value >=NUM_1 && event.value <= NUM_0)
@@ -125,6 +142,12 @@ while( true )
       }
       populateScale();
       -1 => previousMsg;
+    }
+
+    //changing instrument
+    else if (previousMsg == KB_I){
+      changeInstrument(event.value - NUM_1);
+        -1 => previousMsg;
     }
 
     //if no 'previousMsg' just being used to play a note
@@ -154,7 +177,7 @@ while( true )
   // }
   //
   //set scale
-   if (event.value == KB_S) {
+   if (event.value == KB_S || event.value == KB_I) {
      event.value => previousMsg;
    }
 
@@ -260,6 +283,16 @@ fun void populateScale()
       currentScale[i] + j*12 + currentKey @=> fullScale[i + (currentScale.cap()-1)*j];
     }
   }
+}
+
+fun void changeInstrument(int num)
+{
+  <<< "changing instrument: ", num >>>;
+  instrGain => instr.noteOff;
+  instr =< g;
+  inst[num] @=> instr;
+  instr =>  g ;
+  //num => currentInst;
 }
 
 
