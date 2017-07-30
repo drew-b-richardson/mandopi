@@ -55,12 +55,19 @@ VoicForm inst11 @=> inst[11];
 82 => int UP_ARROW;
 45 => int DASH;
 46 => int EQUALS;
-21 => int KB_R;
-14 => int KB_K;
-6 => int KB_C;
 4 => int KB_A;
-22 => int KB_S;
+5 => int KB_B;
+6 => int KB_C;
+7 => int KB_D;
+8 => int KB_E;
+9 => int KB_F;
+10 => int KB_G;
+
 12 => int KB_I;
+14 => int KB_K;
+16 => int KB_M;
+19 => int KB_P;
+22 => int KB_S;
 
 400 => int BEND_START;
 600 => int BEND_END;
@@ -115,113 +122,106 @@ while( true )
   //wait for event
   event => now;
 
-  //if hit the same note twice, turn off
-  <<< event.value, previousMsg >>>;
-
-
-  // <<<  event.value >>>;
-  //function keys for octave above notes
-  if (event.value >=F1 && event.value <= F12)
+  //check if incoming value is to be used as a command value
+  if (previousMsg == KB_S || previousMsg == KB_K || previousMsg == KB_I)
   {
-    play(event.value - F1 + currentScale.cap() - 1);  //sends step of scale + octave: 7-14
-  }
-  //top keys 1-0
-  if (event.value >=NUM_1 && event.value <= NUM_0)
-  {
-    // //check if 1-0 is used to set reverb value
-    // if (previousMsg == KB_R)
-    // {
-    //   (event.value - NUM_1)/10.0 => rev.mix;
-    //   -1 => previousMsg;
-    // }
-    // //check if 1-0 is used to set scale
+    //changing scale
     if (previousMsg == KB_S)
     {
-      if (event.value == NUM_1) {
+      if (event.value == KB_I) {
         ionian @=> currentScale;
       }
-      else if (event.value == NUM_2) {
+      else if (event.value == KB_D) {
         dorian @=> currentScale;
       }
+      else if (event.value == KB_M) {
+        mixolydian @=> currentScale;
+      }
+      else if (event.value == KB_A) {
+        aeolian @=> currentScale;
+      }
+      else if (event.value == KB_B) {
+        minpent @=> currentScale;
+      }
+      else if (event.value == KB_P) {
+        majpent @=> currentScale;
+      }
       populateScale();
-      -1 => previousMsg;
     }
 
     //changing instrument
     else if (previousMsg == KB_I){
-      changeInstrument(event.value - NUM_1);
-        -1 => previousMsg;
+      changeInstrument(event.value - NUM_1);//pass in value 1-10
     }
 
-    //if no 'previousMsg' just being used to play a note
-    else{
+    //changing keys
+    else if (previousMsg == KB_K)
+    {
+      if (event.value == KB_A) {
+        KEY_A => currentKey;
+      }
+      else if (event.value == KB_C) {
+        KEY_C => currentKey;
+      }
+      else if (event.value == KB_G) {
+        KEY_G => currentKey;
+      }
+      else if (event.value == KB_E) {
+        KEY_E => currentKey;
+      }
+      else if (event.value == KB_D) {
+        KEY_D => currentKey;
+      }
+      populateScale();
+    }
+
+    -1 => previousMsg; //reset previousMsg
+  }
+
+  //otherwise, just a one key command
+  else{
+
+    //top keys 1-0
+    if (event.value >=NUM_1 && event.value <= NUM_0)
+    {
       play(event.value - NUM_1); //sends step of scale, 0-7
     }
-  }
-
-  //turn off sound
-  if (event.value == BACK_SPACE) {
-    instrGain => instr.noteOff;
-  }
-
-  //raise octave
-  if (event.value == UP_ARROW) {
-    startOctave + 1 => startOctave;
-  }
-
-  //lower octave
-  if (event.value == DOWN_ARROW) {
-    startOctave - 1 => startOctave;
-  }
-
-  //set reverb
-  // if (event.value == KB_R) {
-  //   event.value => previousMsg;
-  // }
-  //
-  //set scale
-   if (event.value == KB_S || event.value == KB_I) {
-     event.value => previousMsg;
-   }
-
-  //set key
-  if (event.value == KB_K) {
-    event.value => previousMsg;
-  }
-  if (event.value == KB_C && previousMsg == KB_K) {
-      KEY_C => currentKey;
-      -1 => previousMsg;
-      populateScale();
+    //function keys
+    else if (event.value >=F1 && event.value <= F12)
+    {
+      play(event.value - F1 + currentScale.cap() - 1);  //sends step of scale + octave: 7-14
     }
-    else if (event.value == KB_A && previousMsg == KB_K) {
-      KEY_A => currentKey;
-      -1 => previousMsg;
-      populateScale();
+    //turn off sound
+    if (event.value == BACK_SPACE) {
+      instrGain => instr.noteOff;
+    }
+    //raise octave
+    if (event.value == UP_ARROW) {
+      startOctave + 1 => startOctave;
+    }
+    //lower octave
+    if (event.value == DOWN_ARROW) {
+      startOctave - 1 => startOctave;
     }
 
-
+    //nunchuck messages
     //bend pitch
     if (event.value > BEND_START && event.value < BEND_END) {
       (event.value - BEND_MID) => int normalizedValue; //-100 to 100
-        map(normalizedValue, -100, 100, frequency * 8/9, frequency*8/7)=> float newFreq;
-        <<< frequency, ":old | ", newFreq, ":new" >>>;
-        newFreq => instr.freq;
+      map(normalizedValue, -100, 100, frequency * 8/9, frequency*8/7)=> float newFreq;
+      // <<< frequency, ":old | ", newFreq, ":new" >>>;
+      newFreq => instr.freq;
     }
 
-  //vibrato
-  if (event.value > VIBRATO_START && event.value < VIBRATO_END) {
-    (event.value - VIBRATO_MID) => int normalizedValue; //-500 to 500
-    map(normalizedValue, -500, 500, frequency * 22/23, frequency*20/19)=> float newFreq;
-    <<< frequency, ":old | ", newFreq, ":new" >>>;
-    newFreq => instr.freq;
+    //vibrato
+    if (event.value > VIBRATO_START && event.value < VIBRATO_END) {
+      (event.value - VIBRATO_MID) => int normalizedValue; //-500 to 500
+      map(normalizedValue, -500, 500, frequency * 22/23, frequency*20/19)=> float newFreq;
+      // <<< frequency, ":old | ", newFreq, ":new" >>>;
+      newFreq => instr.freq;
+    }
+    event.value => previousMsg;
   }
-
-  if ((event.value >=F1 && event.value <= F12 || event.value >=NUM_1 && event.value <= NUM_0) && event.value == previousMsg) {
-    <<< "turning off:" >>>;
-    instrGain => instr.noteOff;
-    /* code */
-  }
-  event.value => previousMsg;
 }
 
 //wait for arduino serial line.  once you get one, signal main program and send value back to main program via passed in mando event
@@ -270,7 +270,7 @@ fun void getKeyboardEvent(MandoEvent e)
     {
       if( msg.isButtonDown() )
       {
-        <<< "down:",  msg.key >>>;
+        // <<< "down:",  msg.key >>>;
         msg.key => e.value;
         e.signal();
         // 1::samp => now;

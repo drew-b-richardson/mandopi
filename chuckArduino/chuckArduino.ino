@@ -34,7 +34,7 @@ void loop() {
     //
     //if set to send, send steady stream of data
     //if (isSending) {
-    if (nunchuk_buttonZ()) {
+    if (nunchuk_buttonZ() == 1) {
       if (nunchuk_accelX() > VIBRATO_THRESHOLD || nunchuk_accelX() < (VIBRATO_THRESHOLD * -1)) {
         Serial.println(VIBRATO_MID + nunchuk_accelX()); //vibrato will return val between 1500 and 2500
       }
