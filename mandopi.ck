@@ -216,6 +216,7 @@ while( true )
     newFreq => instr.freq;
   }
 
+  if ((event.value >=F1 && event.value <= F12 || event.value >=NUM_1 && event.value <= NUM_0) && event.value == previousMsg) {
     <<< "turning off:" >>>;
     instrGain => instr.noteOff;
     /* code */
