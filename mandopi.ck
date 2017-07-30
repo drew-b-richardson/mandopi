@@ -55,6 +55,7 @@ VoicForm inst11 @=> inst[11];
 82 => int UP_ARROW;
 45 => int DASH;
 46 => int EQUALS;
+53 => int TILDE;
 4 => int KB_A;
 5 => int KB_B;
 6 => int KB_C;
@@ -75,6 +76,8 @@ VoicForm inst11 @=> inst[11];
 1500 => int VIBRATO_START;
 2500 => int VIBRATO_END;
 (VIBRATO_START + VIBRATO_END) / 2 => int VIBRATO_MID;
+0 => int semitoneAdj;
+
 
 8 => int OCTAVE_RANGE;
 
@@ -123,7 +126,7 @@ while( true )
   event => now;
 
   //check if incoming value is to be used as a command value
-  if (previousMsg == KB_S || previousMsg == KB_K || previousMsg == KB_I)
+  if (previousMsg == KB_S || previousMsg == KB_K || previousMsg == KB_I )
   {
     //changing scale
     if (previousMsg == KB_S)
@@ -192,16 +195,24 @@ while( true )
       play(event.value - F1 + currentScale.cap() - 1);  //sends step of scale + octave: 7-14
     }
     //turn off sound
-    if (event.value == BACK_SPACE) {
+    else if (event.value == BACK_SPACE || event.value == TILDE) {
       instrGain => instr.noteOff;
     }
     //raise octave
-    if (event.value == UP_ARROW) {
+    else if (event.value == UP_ARROW) {
       startOctave + 1 => startOctave;
     }
     //lower octave
-    if (event.value == DOWN_ARROW) {
+    else if (event.value == DOWN_ARROW) {
       startOctave - 1 => startOctave;
+    }
+    //lower semitone
+    else if (event.value == DASH) {
+      -1 => semitoneAdj;
+    }
+    //raise semitone
+    else if (event.value == EQUALS) {
+      1 => semitoneAdj;
     }
 
     //nunchuck messages
@@ -273,7 +284,6 @@ fun void getKeyboardEvent(MandoEvent e)
         // <<< "down:",  msg.key >>>;
         msg.key => e.value;
         e.signal();
-        // 1::samp => now;
       }
     }
   }
@@ -297,21 +307,19 @@ fun void populateScale()
 
 fun void changeInstrument(int num)
 {
-  <<< "changing instrument: ", num >>>;
   instrGain => instr.noteOff;
   instr =< g;
   inst[num] @=> instr;
   instr =>  g ;
-  //num => currentInst;
 }
 
 
 fun void play(int scaleStep)
 {
-  Std.mtof(fullScale[scaleStep] + startOctave*12) => frequency;
+  Std.mtof(fullScale[scaleStep] + startOctave*12 + semitoneAdj) => frequency;
   // <<< scaleStep, frequency >>>;
   instrGain => instr.noteOn;
   frequency => instr.freq;
-  // " " => cmd;
   1::samp => now;
+  0 => semitoneAdj;
 }
