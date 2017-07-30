@@ -114,7 +114,10 @@ while( true )
 {
   //wait for event
   event => now;
-  //event.value => previousMsg;
+
+  //if hit the same note twice, turn off
+  <<< event.value, previousMsg >>>;
+
 
   // <<<  event.value >>>;
   //function keys for octave above notes
@@ -212,6 +215,12 @@ while( true )
     <<< frequency, ":old | ", newFreq, ":new" >>>;
     newFreq => instr.freq;
   }
+
+    <<< "turning off:" >>>;
+    instrGain => instr.noteOff;
+    /* code */
+  }
+  event.value => previousMsg;
 }
 
 //wait for arduino serial line.  once you get one, signal main program and send value back to main program via passed in mando event
