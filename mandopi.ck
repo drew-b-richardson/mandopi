@@ -56,6 +56,7 @@ VoicForm inst11 @=> inst[11];
 45 => int DASH;
 46 => int EQUALS;
 53 => int TILDE;
+41 => int ESC;
 4 => int KB_A;
 5 => int KB_B;
 6 => int KB_C;
@@ -194,8 +195,16 @@ while( true )
     {
       play(event.value - F1 + currentScale.cap() - 1);  //sends step of scale + octave: 7-14
     }
+    else if (event.value == TILDE)
+    {
+      play(-1);  //sends step of scale + octave: 7-14
+    }
+    else if (event.value == ESC)
+    {
+      play(6);  //sends step of scale + octave: 7-14
+    }
     //turn off sound
-    else if (event.value == BACK_SPACE || event.value == TILDE) {
+    else if (event.value == BACK_SPACE) {
       instrGain => instr.noteOff;
     }
     //raise octave
@@ -316,7 +325,12 @@ fun void changeInstrument(int num)
 
 fun void play(int scaleStep)
 {
-  Std.mtof(fullScale[scaleStep] + startOctave*12 + semitoneAdj) => frequency;
+	if(scaleStep == -1){
+		Std.mtof(fullScale[6] + (startOctave-1)*12 + semitoneAdj) => frequency;
+	}
+	else{
+		Std.mtof(fullScale[scaleStep] + startOctave*12 + semitoneAdj) => frequency;
+	}
   // <<< scaleStep, frequency >>>;
   instrGain => instr.noteOn;
   frequency => instr.freq;
