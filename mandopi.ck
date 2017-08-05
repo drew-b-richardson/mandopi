@@ -70,6 +70,9 @@ VoicForm inst11 @=> inst[11];
 16 => int KB_M;
 19 => int KB_P;
 22 => int KB_S;
+89 => int NUMPAD_1;
+92 => int NUMPAD_4;
+97 => int NUMPAD_9;
 
 400 => int BEND_START;
 600 => int BEND_END;
@@ -177,11 +180,8 @@ while( true )
         KEY_D => currentKey;
       }
       populateScale();
-    }
-
-    -1 => previousMsg; //reset previousMsg
-  }
-
+    } -1 => previousMsg; //reset previousMsg
+  } 
   //otherwise, just a one key command
   else{
 
@@ -203,7 +203,13 @@ while( true )
     {
       play(6);  //sends step of scale + octave: 7-14
     }
-    //turn off sound
+    //volume
+   else if (event.value >= NUMPAD_4 && event.value <= NUMPAD_9)
+{
+      (event.value - NUMPAD_4) * 0.2 => instrGain; 
+}
+
+//turn off sound
     else if (event.value == BACK_SPACE) {
       instrGain => instr.noteOff;
     }
